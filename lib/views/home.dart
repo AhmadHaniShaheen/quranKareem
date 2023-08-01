@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quran_kareem/api/network.dart';
+import 'package:quran_kareem/api/local_data.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,20 +9,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Network network = Network();
-  int pageNumber = 1;
-  List ayat = [];
+  LocalData localData = LocalData();
+  int pageNumber = 2;
+  List<dynamic> ayate = [];
 
-  void getData() async {
-    Map<String, dynamic> pageData = await network.fetchData(pageNumber);
-    setState(() {
-      ayat = pageData['data']['ayahs'];
-    });
+  void getLocalData() async {
+    ayate = await localData.fetchData(pageNumber);
+    setState(() {});
   }
 
   @override
   void initState() {
-    getData();
+    getLocalData();
     super.initState();
   }
 
@@ -30,7 +28,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quran'),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: const Color(0xffffeec6),
+        title: const Text(
+          '‏‏‏‏‏‏‏ ‏‏‏‏‏‏',
+          style: TextStyle(
+            fontFamily: 'hafsSmart',
+            fontSize: 24,
+            textBaseline: TextBaseline.ideographic,
+          ),
+        ),
       ),
       body: GestureDetector(
         onTap: () {
@@ -50,50 +58,59 @@ class _HomePageState extends State<HomePage> {
         child: SafeArea(child: PageView.builder(
           itemBuilder: (context, index) {
             pageNumber = index + 1;
-            getData();
-            return Wrap(
+            getLocalData();
+            return Row(
+              textDirection:
+                  pageNumber % 2 == 0 ? TextDirection.ltr : TextDirection.rtl,
               children: [
-                for (int i = 0; i < ayat.length; i++)
-                  Column(
-                    children: [
-                      Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: '${ayat[i]['text']}',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                textBaseline: TextBaseline.ideographic,
-                              ),
-                            ),
-                            WidgetSpan(
-                              child: Padding(
-                                padding: const EdgeInsets.only(),
-                                child: Container(
-                                  width: 30,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    image: DecorationImage(
-                                      image: AssetImage("images/quranicon.png"),
-                                    ),
-                                  ),
-                                  child: Center(
+                Expanded(
+                  child: Container(
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                        gradient: pageNumber % 2 == 0
+                            ? const LinearGradient(
+                                colors: [
+                                  Color(0xffffeec6),
+                                  Color(0xfffdfcfa),
+                                ],
+                              )
+                            : const LinearGradient(
+                                colors: [
+                                  Color(0xfffdfcfa),
+                                  Color(0xffffeec6),
+                                ],
+                              )),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Flexible(
+                            child: Wrap(
+                              children: [
+                                for (int i = 0; i < ayate.length; i++)
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
-                                      '${ayat[i]['numberInSurah']}',
+                                      '${ayate[i]['aya_text']}',
                                       style: const TextStyle(
-                                        fontSize: 14,
+                                        fontFamily: 'hafsSmart',
+                                        fontSize: 24,
+                                        textBaseline: TextBaseline.ideographic,
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
+                ),
+                Container(
+                  width: 5,
+                  color: Colors.red,
+                )
               ],
             );
           },
